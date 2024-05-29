@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Demo</title>
+  </head>
+  <body>
+    <input type="text" id="messageInput" placeholder="Type a message" />
+    <button onclick="sendMessage()">Send</button>
+    <div id="messages"></div>
+
+    <script>
+      const socket = new WebSocket("ws://localhost:8080");
+
+      socket.addEventListener("open", () => {
+        console.log("Connected to the server");
+      });
+
+      socket.addEventListener("message", (event) => {
+        const messages = document.getElementById("messages");
+        const message = document.createElement("div");
+
+        // Check if the message data is a Blob
+        if (event.data instanceof Blob) {
+          const reader = new FileReader();
+          reader.onload = function () {
+            message.textContent = `Server: ${reader.result}`;
+            messages.appendChild(message);
+          };
+          reader.readAsText(event.data);
+        } else {
+          message.textContent = `Server: ${event.data}`;
+          messages.appendChild(message);
+        }
+      });
+
+      function sendMessage() {
+        const input = document.getElementById("messageInput");
+        const message = input.value;
+        socket.send(message);
+
+        const messages = document.getElementById("messages");
+        const messageDiv = document.createElement("div");
+        messageDiv.textContent = `You: ${message}`;
+        messages.appendChild(messageDiv);
+
+        input.value = "";
+      }
+    </script>
+  </body>
+</html>
